@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -32,6 +33,9 @@ import android.widget.TextView;
 
 import com.example.hivian.myweather.R;
 import com.example.hivian.myweather.gps.LocationService;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
            verifyStoragePermissions(this);
+        } else {
+            startService(new Intent(this, LocationService.class));
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -82,12 +89,11 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("Lat = ", String.valueOf(latitude));
                         Log.d("Lon = ", String.valueOf(longitude));
                     }
-                }, new IntentFilter(LocationService.ACTION_LOCATION_BROADCAST)
+                }, new IntentFilter(LocationService.TAG)
         );
-
     }
 
-    public static void verifyStoragePermissions(Activity activity) {
+    public void verifyStoragePermissions(Activity activity) {
         int checkCoarseLocationPermission = ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_COARSE_LOCATION);
         int checkFineLocationPermission = ContextCompat.checkSelfPermission(activity,
@@ -98,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{ Manifest.permission.ACCESS_COARSE_LOCATION,
                             Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_MULTIPLE_REQUEST);
+        } else {
+            startService(new Intent(this, LocationService.class));
         }
     }
 
@@ -121,13 +129,12 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyStoragePermissions(this);
         }
-        startService(new Intent(this, LocationService.class));
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        stopService(new Intent(this, LocationService.class));
+        //stopService(new Intent(this, LocationService.class));
         super.onPause();
     }
 
