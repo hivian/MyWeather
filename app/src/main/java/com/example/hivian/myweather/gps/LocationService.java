@@ -56,9 +56,7 @@ public class LocationService extends Service {
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
-    public static final String
-            EXTRA_LATITUDE = "latitude",
-            EXTRA_LONGITUDE = "longitude";
+    public static final String EXTRA_LOCATION = "location";
 
 
     @Nullable
@@ -97,9 +95,9 @@ public class LocationService extends Service {
         Log.d("START", "START");
         createLocationRequest();
 
-        /*HandlerThread handlerThread = new HandlerThread(TAG);
+        HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
-        serviceHandler = new Handler(handlerThread.getLooper());*/
+        serviceHandler = new Handler(handlerThread.getLooper());
 
         requestLocationUpdate();
 
@@ -118,23 +116,20 @@ public class LocationService extends Service {
         Log.d(TAG, "Requesting location updates");
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest,
-                        locationCallback, null);
+                        locationCallback, serviceHandler.getLooper());
         } catch (SecurityException e) {
             Log.d(TAG, "Lost location permission. Could not request updates. " + e);
         }
     }
 
     private void sendBroadcast(Location location) {
-        Location tmp = mLocation;
-
         mLocation = location;
 
         // Notify anyone listening for broadcasts about the new location.
         if (location != null) {
             Log.d("SERVICE", "BRODCAST SENT");
             Intent intent = new Intent(TAG);
-            intent.putExtra(EXTRA_LATITUDE, mLocation.getLatitude());
-            intent.putExtra(EXTRA_LONGITUDE, mLocation.getLongitude());
+            intent.putExtra(EXTRA_LOCATION, mLocation);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
@@ -154,10 +149,8 @@ public class LocationService extends Service {
                         public void onComplete(@NonNull Task<Location> task) {
                             if (task.isSuccessful() && task.getResult() != null) {
                                 mLocation = task.getResult();
-                                Log.d("SLat = ", String.valueOf(mLocation.getLatitude()));
-                                Log.d("SLon = ", String.valueOf(mLocation.getLongitude()));
                             } else {
-                                Log.w("getLastLocation", "Failed to get location.");
+                                Log.d("getLastLocation", "Failed to get location.");
                             }
                         }
                     });
@@ -169,7 +162,7 @@ public class LocationService extends Service {
     @Override
     public void onDestroy() {
         Log.d("SERVICE", "DESTROYED");
-        serviceHandler.removeCallbacksAndMessages(null);
+        serviceHandler.removeCallbacksAndMessages(locationCallback);
         super.onDestroy();
     }
 

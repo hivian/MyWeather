@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.example.hivian.myweather.R;
 import com.example.hivian.myweather.gps.LocationService;
+import com.example.hivian.myweather.http.HttpRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    BroadcastReceiver broadcastReceiver;
 
 
     @Override
@@ -80,17 +82,6 @@ public class MainActivity extends AppCompatActivity {
             startService(new Intent(this, LocationService.class));
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        double latitude = intent.getDoubleExtra(LocationService.EXTRA_LATITUDE, 0);
-                        double longitude = intent.getDoubleExtra(LocationService.EXTRA_LONGITUDE, 0);
-                        Log.d("Lat = ", String.valueOf(latitude));
-                        Log.d("Lon = ", String.valueOf(longitude));
-                    }
-                }, new IntentFilter(LocationService.TAG)
-        );
     }
 
     public void verifyStoragePermissions(Activity activity) {
@@ -126,16 +117,28 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyStoragePermissions(this);
         }
-        super.onResume();
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = intent.getExtras();
+                Location location = (Location) b.get(LocationService.EXTRA_LOCATION);
+                Log.d("Lat = ", String.valueOf(location.getLatitude()));
+                Log.d("Lon = ", String.valueOf(location.getLongitude()));
+                //HttpRequest.loadCurrentWeatherLocation(location);
+            }
+        };
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(broadcastReceiver, new IntentFilter(LocationService.TAG));
     }
 
     @Override
     protected void onPause() {
-        //stopService(new Intent(this, LocationService.class));
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
     }
 
     @Override
