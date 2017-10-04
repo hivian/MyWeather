@@ -1,23 +1,19 @@
 package com.example.hivian.myweather.http;
 
-import android.app.Activity;
-import android.content.Context;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.hivian.myweather.R;
-import com.example.hivian.myweather.views.MainActivity;
+import com.example.hivian.myweather.views.activities.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Connection;
 import java.util.Locale;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -73,9 +69,6 @@ public class HttpRequest extends AsyncTask<String, String, String> {
 
             data = builder.toString();
 
-            //JSONObject obj = new JSONObject(data);
-            //Log.d("JSON", obj.toString());
-
         } catch (Exception e) {
             Log.d("Error", e.getMessage());
             errorMessage = "Url connection: no data found";
@@ -84,7 +77,7 @@ public class HttpRequest extends AsyncTask<String, String, String> {
                 try {
                     bufferedReader.close();
                 } catch (Exception e) {
-
+                    Log.d("Error", e.getMessage());
                 }
             }
         }
@@ -92,9 +85,21 @@ public class HttpRequest extends AsyncTask<String, String, String> {
     }
 
     @Override
-    protected void onPostExecute(String s) {
-        if (s != null) {
-            mainActivity.setData(s);
+    protected void onPostExecute(String postData) {
+        if (postData != null) {
+            try {
+                JSONObject jsonObject = new JSONObject(postData);
+                if(jsonObject.getInt("cod") != 200) {
+                    errorMessage = "Api request unsuccessful";
+                    Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                mainActivity.setData(jsonObject);
+            } catch (JSONException e) {
+                Log.d("JSONObject", e.getMessage());
+                Toast.makeText(mainActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
         } else {
             Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_SHORT).show();
         }
