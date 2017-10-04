@@ -38,6 +38,8 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.concurrent.ExecutionException;
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -50,9 +52,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
+
+    private static final String CURRENT_WEATHER_LOCATION_URL =
+            "http://api.openweathermap.org/data/2.5/weather?&lat=%s&lon=%s&units=metric&mode=json&lang=%s&APPID=%s";
     private ViewPager mViewPager;
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
     BroadcastReceiver broadcastReceiver;
@@ -128,11 +130,16 @@ public class MainActivity extends AppCompatActivity {
                 Location location = (Location) b.get(LocationService.EXTRA_LOCATION);
                 Log.d("Lat = ", String.valueOf(location.getLatitude()));
                 Log.d("Lon = ", String.valueOf(location.getLongitude()));
+                new HttpRequest(MainActivity.this, location).execute(CURRENT_WEATHER_LOCATION_URL);
                 //HttpRequest.loadCurrentWeatherLocation(location);
             }
         };
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(broadcastReceiver, new IntentFilter(LocationService.TAG));
+    }
+
+    public void setData(String data) {
+        Log.d("DATA", data);
     }
 
     @Override
