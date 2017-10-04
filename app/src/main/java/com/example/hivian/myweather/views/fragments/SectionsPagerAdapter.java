@@ -4,6 +4,9 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
+
+import com.example.hivian.myweather.R;
 
 /**
  * Created by hivian on 10/4/17.
@@ -14,24 +17,22 @@ import android.support.v4.app.FragmentPagerAdapter;
  * one of the sections/tabs/pages.
  */
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
-    private Fragment fragment =null;
+    private Fragment fragment = null;
     private Context context;
 
     public SectionsPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
+        this.context = context;
     }
 
     @Override
     public Fragment getItem(int position) {
-        Fragment fragment =null;
+        Log.d("POS", String.valueOf(position));
         switch (position) {
             case 0:
                 fragment = Fragment.instantiate(context, CurrentWeatherFragment.class.getName());
                 break;
             case 1:
-                fragment = Fragment.instantiate(context, CurrentWeatherFragment.class.getName());
-                break;
-            case 2:
                 fragment = Fragment.instantiate(context, CurrentWeatherFragment.class.getName());
                 break;
         }
@@ -41,7 +42,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         // Show 3 total pages.
-        return 3;
+        return 2;
     }
 
     @Override
@@ -50,10 +51,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "Current weather";
             case 1:
-                return "SECTION 2";
-            case 2:
-                return "SECTION 3";
+                return "Forecast weather";
         }
         return null;
     }
+
 }

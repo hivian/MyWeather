@@ -43,6 +43,7 @@ import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
             "http://api.openweathermap.org/data/2.5/weather?&lat=%s&lon=%s&units=metric&mode=json&lang=%s&APPID=%s";
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
     BroadcastReceiver broadcastReceiver;
-    private Context context;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,18 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
 
-        // Set up the ViewPager with the sections adapter.
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
-        this.context = this;
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new CurrentWeatherFragment())
+                    .commit();
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
            verifyStoragePermissions(this);
@@ -80,6 +73,45 @@ public class MainActivity extends AppCompatActivity {
             startService(new Intent(this, LocationService.class));
         }
     }
+
+    public void setData(JSONObject json) {
+        try {
+
+            Log.d("JSON", json.getString("name").toUpperCase(Locale.getDefault()) +
+                    ", " +
+                    json.getJSONObject("sys").getString("country"));
+
+            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
+            JSONObject main = json.getJSONObject("main");
+            Log.d("JSON",
+                    details.getString("description").toUpperCase(Locale.US) +
+                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
+                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
+
+            Log.d("JSON",
+                    String.format("%.2f", main.getDouble("temp"))+ " ℃");
+
+            DateFormat df = DateFormat.getDateTimeInstance();
+            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
+            Log.d("JSON", "Last update: " + updatedOn);
+
+            /*setWeatherIcon(details.getInt("id"),
+                    json.getJSOZNObject("sys").getLong("sunrise") * 1000,
+                    json.getJSONObject("sys").getLong("sunset") * 1000);*/
+            updateCurrentWeather("VOILA COOL");
+
+        } catch (JSONException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.d("SimpleWeather", "One or more fields not found in the JSON data");
+        }
+    }
+
+    public void updateCurrentWeather(String test) {
+        CurrentWeatherFragment wf = (CurrentWeatherFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.container);
+        wf.updateCurrentWeather(test);
+    }
+
 
     public void verifyStoragePermissions(Activity activity) {
         int checkCoarseLocationPermission = ContextCompat.checkSelfPermission(activity,
@@ -125,14 +157,13 @@ public class MainActivity extends AppCompatActivity {
                 Location location = (Location) b.get(LocationService.EXTRA_LOCATION);
                 Log.d("Lat = ", String.valueOf(location.getLatitude()));
                 Log.d("Lon = ", String.valueOf(location.getLongitude()));
+
                 new HttpRequest(MainActivity.this, location).execute(CURRENT_WEATHER_LOCATION_URL);
             }
         };
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(broadcastReceiver, new IntentFilter(LocationService.TAG));
     }
-
-    
 
     @Override
     protected void onPause() {

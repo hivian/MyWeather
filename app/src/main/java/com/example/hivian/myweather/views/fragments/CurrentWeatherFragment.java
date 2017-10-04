@@ -1,6 +1,7 @@
 package com.example.hivian.myweather.views.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.hivian.myweather.R;
+import com.example.hivian.myweather.views.activities.MainActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,46 +53,29 @@ public class CurrentWeatherFragment extends Fragment {
         currentTemperatureField = rootView.findViewById(R.id.current_temperature_field);
         weatherIcon = rootView.findViewById(R.id.weather_icon);
 
+
         //weatherIcon.setTypeface(weatherFont);
 
         return rootView;
     }
 
+    public void updateCurrentWeather(String test) {
+        Log.d("DEBUG", test);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("ON", "RESUME");
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        weatherFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/weather.ttf");
+        //weatherFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/weather.ttf");
         //updateWeatherData(new CityPreference(getActivity()).getCity());
     }
 
-    public void setData(JSONObject json) {
-        try {
-            Log.d("JSON", json.getString("name").toUpperCase(Locale.getDefault()) +
-                    ", " +
-                    json.getJSONObject("sys").getString("country"));
 
-            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = json.getJSONObject("main");
-            Log.d("JSON",
-                    details.getString("description").toUpperCase(Locale.US) +
-                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
-                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
-
-            Log.d("JSON",
-                    String.format("%.2f", main.getDouble("temp"))+ " ℃");
-
-            DateFormat df = DateFormat.getDateTimeInstance();
-            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
-            Log.d("JSON", "Last update: " + updatedOn);
-
-            /*setWeatherIcon(details.getInt("id"),
-                    json.getJSONObject("sys").getLong("sunrise") * 1000,
-                    json.getJSONObject("sys").getLong("sunset") * 1000);*/
-
-        } catch (JSONException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.d("SimpleWeather", "One or more fields not found in the JSON data");
-        }
-    }
 
 }
