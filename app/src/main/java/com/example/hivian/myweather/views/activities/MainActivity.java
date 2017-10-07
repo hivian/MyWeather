@@ -75,41 +75,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setData(JSONObject json) {
-        try {
-
-            Log.d("JSON", json.getString("name").toUpperCase(Locale.getDefault()) +
-                    ", " +
-                    json.getJSONObject("sys").getString("country"));
-
-            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = json.getJSONObject("main");
-            Log.d("JSON",
-                    details.getString("description").toUpperCase(Locale.US) +
-                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
-                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
-
-            Log.d("JSON",
-                    String.format("%.2f", main.getDouble("temp"))+ " ℃");
-
-            DateFormat df = DateFormat.getDateTimeInstance();
-            String updatedOn = df.format(new Date(json.getLong("dt")*1000));
-            Log.d("JSON", "Last update: " + updatedOn);
-
-            /*setWeatherIcon(details.getInt("id"),
-                    json.getJSOZNObject("sys").getLong("sunrise") * 1000,
-                    json.getJSONObject("sys").getLong("sunset") * 1000);*/
-            updateCurrentWeather("VOILA COOL");
-
-        } catch (JSONException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.d("SimpleWeather", "One or more fields not found in the JSON data");
-        }
+        updateCurrentWeather(json);
     }
 
-    public void updateCurrentWeather(String test) {
+    public void updateCurrentWeather(JSONObject json) {
         CurrentWeatherFragment wf = (CurrentWeatherFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.container);
-        wf.updateCurrentWeather(test);
+        wf.updateCurrentWeather(json);
     }
 
 
