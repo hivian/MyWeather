@@ -1,10 +1,18 @@
 package com.example.hivian.myweather.http;
 
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.AudioRouting;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.hivian.myweather.utilities.NotificationHandler;
 import com.example.hivian.myweather.views.activities.MainActivity;
 
 import java.io.BufferedReader;
@@ -26,24 +34,29 @@ public class HttpRequest extends AsyncTask<String, String, String> {
     private static final String CURRENT_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&mode=json&lang=%s";
     private static final String CURRENT_WEATHER_LOCATION_URL = "http://api.openweathermap.org/data/2.5/weather?&lat=%s&lon=%s&units=metric&mode=json&lang=%s&APPID=%s";
 
+    private NotificationManager nm;
     private Location location;
-    private MainActivity mainActivity;
-    String errorMessage;
+    private Context context;
+    private JSONObject jsonObject;
+    private String errorMessage;
 
-    public HttpRequest(MainActivity mainActivity, Location location) {
-        this.mainActivity = mainActivity;
+    public HttpRequest(Context context, Location location) {
+        this.context = context;
         this.location = location;
     }
 
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        //progressBar.setVisibility(View.VISIBLE);
+        //NotificationHandler.notify(context, android.R.drawable.ic_popup_sync, "", "");
+    }
 
     @Override
     protected String doInBackground(String... strings) {
         String data = null;
         BufferedReader bufferedReader = null;
 
-        Log.d("format",  String.format(CURRENT_WEATHER_LOCATION_URL,
-                String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()),
-                Locale.getDefault().getLanguage(), API_KEY));
         try {
             URL url = new URL(String.format(CURRENT_WEATHER_LOCATION_URL,
                     String.valueOf(location.getLatitude()), String.valueOf(location.getLongitude()),
@@ -56,7 +69,7 @@ public class HttpRequest extends AsyncTask<String, String, String> {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 errorMessage = "Server returned HTTP " + connection.getResponseCode()
                         + " " + connection.getResponseMessage();
-                Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
                 return null;
             }
 
@@ -88,20 +101,19 @@ public class HttpRequest extends AsyncTask<String, String, String> {
     protected void onPostExecute(String postData) {
         if (postData != null) {
             try {
-                JSONObject jsonObject = new JSONObject(postData);
+                jsonObject = new JSONObject(postData);
                 if(jsonObject.getInt("cod") != 200) {
                     errorMessage = "Api request unsuccessful";
-                    Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
                     return;
                 }
-                mainActivity.setData(jsonObject);
+                ((MainActivity) context).setData(jsonObject);
             } catch (JSONException e) {
-                Log.d("JSONObject", e.getMessage());
-                Toast.makeText(mainActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         } else {
-            Toast.makeText(mainActivity, errorMessage, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
         }
     }
 

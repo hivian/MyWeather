@@ -2,6 +2,8 @@ package com.example.hivian.myweather.views.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,20 +29,25 @@ import java.util.Locale;
 
 
 public class CurrentWeatherFragment extends Fragment {
-    Typeface weatherFont;
+    private Typeface weatherFont;
+    private TextView cityField;
+    private TextView updatedField;
+    private TextView detailsField;
+    private TextView descriptionField;
+    private TextView humidityField;
+    private TextView pressureField;
+    private TextView currentTemperatureField;
+    private TextView weatherIcon;
 
-    TextView cityField;
-    TextView updatedField;
-    TextView detailsField;
-    TextView currentTemperatureField;
-    TextView weatherIcon;
+    private JSONObject details;
+    private JSONObject main;
+    private DateFormat df;
+    private String updatedOn;
+    private String temperature;
+    private SharedPreferences preferences;
+    private static final String PREFS = "PREFS";
+    private static final String PREFS_JSON = "PREFS_JSON";
 
-
-    private Handler handler;
-
-    public CurrentWeatherFragment(){
-        handler = new Handler();
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,11 +57,15 @@ public class CurrentWeatherFragment extends Fragment {
 
         cityField = rootView.findViewById(R.id.city_field);
         updatedField = rootView.findViewById(R.id.updated_field);
-        detailsField = rootView.findViewById(R.id.details_field);
+        descriptionField = rootView.findViewById(R.id.description_field);
+        humidityField = rootView.findViewById(R.id. humidity_field);
+        pressureField = rootView.findViewById(R.id.pressure_field);
         currentTemperatureField = rootView.findViewById(R.id.current_temperature_field);
         weatherIcon = rootView.findViewById(R.id.weather_icon);
 
         weatherIcon.setTypeface(weatherFont);
+
+        loadPreferences();
 
         return rootView;
     }
@@ -62,53 +74,32 @@ public class CurrentWeatherFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         weatherFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/weather_icons.ttf");
-    }
-
-    public void updateCurrentWeather(JSONObject json) {
-        Log.d("DEBUG", json.toString());
-        renderWeather(json);
+        preferences = getActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
     private void renderWeather(JSONObject json) {
         try {
-            Log.d("JSON", json.getString("name").toUpperCase(Locale.getDefault()) +
+            details = json.getJSONArray("weather").getJSONObject(0);
+            main = json.getJSONObject("main");
+            df = DateFormat.getDateTimeInstance();
+            updatedOn = df.format(new Date(json.getLong("dt") * 1000));
+            temperature = String.format("%.2f", main.getDouble("temp")) + " ℃";
+
+            cityField.setText(json.getString("name").toUpperCase(Locale.getDefault()) +
                     ", " +
                     json.getJSONObject("sys").getString("country"));
-
-            JSONObject details = json.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = json.getJSONObject("main");
-            Log.d("JSON",
-                    details.getString("description").toUpperCase(Locale.getDefault()) +
-                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
-                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
-
-            Log.d("JSON",
-                    String.format("%.2f", main.getDouble("temp"))+ " ℃");
-
-            DateFormat df = DateFormat.getDateTimeInstance();
-            String updatedOn = df.format(new Date(json.getLong("dt") * 1000));
-            Log.d("JSON", "Last update: " + updatedOn);
-            cityField.setText(json.getString("name").toUpperCase(Locale.getDefault()) + ", " +
-                    json.getJSONObject("sys").getString("country"));
-
-
-            detailsField.setText(
-                    details.getString("description").toUpperCase(Locale.getDefault()) +
-                            "\n" + "Humidity: " + main.getString("humidity") + "%" +
-                            "\n" + "Pressure: " + main.getString("pressure") + " hPa");
-
-            currentTemperatureField.setText(
-                    String.format("%.2f", main.getDouble("temp")) + " ℃");
-
-            df = DateFormat.getDateTimeInstance();
-            updatedOn = df.format(new Date(json.getLong("dt")*1000));
             updatedField.setText("Last update: " + updatedOn);
-
+            descriptionField.setText(details.getString("description").toUpperCase(Locale.getDefault()));
+            humidityField.setText("Humidity: " + main.getString("humidity") + "%");
+            pressureField.setText("Pressure: " + main.getString("pressure") + " hPa");
+            currentTemperatureField.setText(temperature);
+            currentTemperatureField.setTextColor(getTemperatureColor(
+                    main.getDouble("temp")));
             setWeatherIcon(details.getInt("id"),
                     json.getJSONObject("sys").getLong("sunrise") * 1000,
                     json.getJSONObject("sys").getLong("sunset") * 1000);
 
-        }catch(Exception e){
+        } catch(Exception e){
             Log.d("updateCurrentWeather", "JSON field(s) missing");
         }
     }
@@ -117,9 +108,9 @@ public class CurrentWeatherFragment extends Fragment {
     private void setWeatherIcon(int actualId, long sunrise, long sunset){
         int id = actualId / 100;
         String icon = "";
-        if(actualId == 800){
+        if (actualId == 800){
             long currentTime = new Date().getTime();
-            if(currentTime>=sunrise && currentTime<sunset) {
+            if(currentTime >= sunrise && currentTime < sunset) {
                 icon = getActivity().getString(R.string.weather_sunny);
             } else {
                 icon = getActivity().getString(R.string.weather_clear_night);
@@ -141,6 +132,40 @@ public class CurrentWeatherFragment extends Fragment {
             }
         }
         weatherIcon.setText(icon);
+    }
+
+    public void loadPreferences() {
+        try {
+            if (preferences != null && preferences.contains(PREFS_JSON)) {
+                JSONObject json = new JSONObject(preferences.getString(PREFS_JSON, null));
+                renderWeather(json);
+            }
+        } catch (JSONException e) {
+            Log.d("loadPreferences", "Json FAIL");
+        }
+    }
+
+    public void savePreferences(JSONObject json) {
+        if (preferences != null) {
+            preferences.edit()
+                    .putString(PREFS_JSON, json.toString())
+                    .apply();
+        }
+    }
+
+    public void updateCurrentWeather(JSONObject json) {
+        Log.d("DEBUG", json.toString());
+        renderWeather(json);
+        savePreferences(json);
+    }
+
+    public int getTemperatureColor(double temperature) {
+        if (temperature <= 15)
+            return Color.parseColor("#7997A1");
+        else if (temperature > 15 && temperature <= 25)
+            return Color.parseColor("#CC8400");
+        else
+            return Color.RED;
     }
 
 }

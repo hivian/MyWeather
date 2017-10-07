@@ -17,34 +17,18 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.hivian.myweather.R;
 import com.example.hivian.myweather.gps.LocationService;
 import com.example.hivian.myweather.http.HttpRequest;
 import com.example.hivian.myweather.views.fragments.CurrentWeatherFragment;
-import com.example.hivian.myweather.views.fragments.SectionsPagerAdapter;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
             "http://api.openweathermap.org/data/2.5/weather?&lat=%s&lon=%s&units=metric&mode=json&lang=%s&APPID=%s";
     public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
     BroadcastReceiver broadcastReceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

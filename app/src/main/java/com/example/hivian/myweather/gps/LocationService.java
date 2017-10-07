@@ -52,7 +52,7 @@ public class LocationService extends Service {
 
     private Location mLocation;
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 60;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
@@ -79,7 +79,6 @@ public class LocationService extends Service {
             @Override
             public void onLocationAvailability(LocationAvailability locationAvailability) {
                 if (!locationAvailability.isLocationAvailable()) {
-                    Log.d("TOTO", "NO");
                     serviceHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -92,7 +91,6 @@ public class LocationService extends Service {
             }
         };
 
-        Log.d("START", "START");
         createLocationRequest();
 
         HandlerThread handlerThread = new HandlerThread(TAG);
@@ -113,7 +111,6 @@ public class LocationService extends Service {
     }
 
     public void requestLocationUpdate() {
-        Log.d(TAG, "Requesting location updates");
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest,
                         locationCallback, serviceHandler.getLooper());
@@ -125,9 +122,7 @@ public class LocationService extends Service {
     private void sendBroadcast(Location location) {
         mLocation = location;
 
-        // Notify anyone listening for broadcasts about the new location.
         if (location != null) {
-            Log.d("SERVICE", "BRODCAST SENT");
             Intent intent = new Intent(TAG);
             intent.putExtra(EXTRA_LOCATION, mLocation);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -161,9 +156,8 @@ public class LocationService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d("SERVICE", "DESTROYED");
-        serviceHandler.removeCallbacksAndMessages(locationCallback);
         super.onDestroy();
+        serviceHandler.removeCallbacksAndMessages(locationCallback);
     }
 
 }
