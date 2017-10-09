@@ -37,7 +37,7 @@ public class LocationService extends Service {
 
     private Location mLocation;
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 30;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 

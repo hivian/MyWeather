@@ -91,7 +91,7 @@ public class CurrentWeatherFragment extends Fragment {
             cityField.setText(json.getString("name").toUpperCase(Locale.getDefault()) +
                     ", " +
                     json.getJSONObject("sys").getString("country"));
-            updatedField.setText("Last update: " + updatedOn);
+            updatedField.setText(updatedOn);
             descriptionField.setText(details.getString("description").toUpperCase(Locale.getDefault()));
             windField.setText(wind.getString("speed") + " km/h");
             humidityField.setText(main.getString("humidity") + " %");
