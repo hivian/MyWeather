@@ -139,6 +139,8 @@ public class CurrentWeatherFragment extends Fragment {
             if (preferences != null && preferences.contains(PREFS_JSON)) {
                 JSONObject json = new JSONObject(preferences.getString(PREFS_JSON, null));
                 renderWeather(json);
+            } else {
+                descriptionField.setText("Error");
             }
         } catch (JSONException e) {
             Log.d("loadPreferences", "Json FAIL");
@@ -154,7 +156,6 @@ public class CurrentWeatherFragment extends Fragment {
     }
 
     public void updateCurrentWeather(JSONObject json) {
-        Log.d("DEBUG", json.toString());
         renderWeather(json);
         savePreferences(json);
     }

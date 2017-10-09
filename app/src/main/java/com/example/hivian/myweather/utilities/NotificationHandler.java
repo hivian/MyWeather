@@ -12,25 +12,30 @@ import com.example.hivian.myweather.R;
  */
 
 public class NotificationHandler {
-    private NotificationManager nm;
+    private static int NOTIFICATION_ID = 1;
+    private static Object service;
 
-    public NotificationManager notify(Context context, int icon,
-                                                 String title, String message) {
+    public static void notify(Context context, int icon, String title, String message) {
+
+        service = context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder n  = new NotificationCompat.Builder(context)
-                .setContentTitle("PDownload")
-                .setContentText("Download in progress")
+                .setContentTitle(title)
+                .setContentText(message)
                 .setSmallIcon(icon)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setOngoing(true);
+                .setOngoing(false);
 
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) service;
+        notificationManager.notify(NOTIFICATION_ID, n.build());
 
-        notificationManager.notify(0, n.build());
-
-        return notificationManager;
     }
 
+    public static void cancelNotification(Context context) {
+        service = context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationManager nm = (NotificationManager) service;
+        nm.cancel(NOTIFICATION_ID);
+    }
 
 }

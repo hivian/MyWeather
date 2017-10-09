@@ -34,7 +34,6 @@ public class HttpRequest extends AsyncTask<String, String, String> {
     private static final String CURRENT_WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&mode=json&lang=%s";
     private static final String CURRENT_WEATHER_LOCATION_URL = "http://api.openweathermap.org/data/2.5/weather?&lat=%s&lon=%s&units=metric&mode=json&lang=%s&APPID=%s";
 
-    private NotificationManager nm;
     private Location location;
     private Context context;
     private JSONObject jsonObject;
@@ -48,8 +47,8 @@ public class HttpRequest extends AsyncTask<String, String, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        //progressBar.setVisibility(View.VISIBLE);
-        //NotificationHandler.notify(context, android.R.drawable.ic_popup_sync, "", "");
+        NotificationHandler.notify(context, android.R.drawable.ic_popup_sync,
+                "My Weather", "Synchronization ...");
     }
 
     @Override
@@ -115,6 +114,7 @@ public class HttpRequest extends AsyncTask<String, String, String> {
         } else {
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
         }
+        NotificationHandler.cancelNotification(context);
     }
 
 }

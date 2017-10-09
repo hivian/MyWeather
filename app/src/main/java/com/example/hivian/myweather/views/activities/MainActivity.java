@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,7 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.hivian.myweather.R;
-import com.example.hivian.myweather.gps.LocationService;
+import com.example.hivian.myweather.services.LocationService;
 import com.example.hivian.myweather.http.HttpRequest;
 import com.example.hivian.myweather.views.fragments.CurrentWeatherFragment;
 
@@ -51,9 +50,13 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, new CurrentWeatherFragment())
                     .commit();
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-           verifyStoragePermissions(this);
+            verifyStoragePermissions(this);
         } else {
             startService(new Intent(this, LocationService.class));
         }
@@ -94,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    startService(new Intent(this, LocationService.class));
                 } else {
                     //finish();
                 }
@@ -104,9 +108,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            verifyStoragePermissions(this);
-        }
+
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -126,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopService(new Intent(this, LocationService.class));
     }
 
     @Override

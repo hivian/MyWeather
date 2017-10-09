@@ -1,31 +1,19 @@
-package com.example.hivian.myweather.gps;
+package com.example.hivian.myweather.services;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.location.LocationProvider;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.hivian.myweather.R;
+import com.example.hivian.myweather.utilities.NotificationHandler;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
@@ -33,10 +21,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-
-import java.util.concurrent.Executor;
 
 /**
  * Created by hivian on 10/2/17.
@@ -52,7 +37,7 @@ public class LocationService extends Service {
 
     private Location mLocation;
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 60;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
@@ -74,6 +59,7 @@ public class LocationService extends Service {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 sendBroadcast(locationResult.getLastLocation());
+                NotificationHandler.cancelNotification(LocationService.this);
             }
 
             @Override
@@ -82,8 +68,7 @@ public class LocationService extends Service {
                     serviceHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Localisation unavailable",
-                                    Toast.LENGTH_SHORT).show();
+                            Log.d("DEBUG", "Localisation unavailable");
                         }
                     });
                 }
@@ -97,7 +82,7 @@ public class LocationService extends Service {
         handlerThread.start();
         serviceHandler = new Handler(handlerThread.getLooper());
 
-        requestLocationUpdate();
+        //requestLocationUpdate();
 
         super.onCreate();
     }
@@ -105,7 +90,9 @@ public class LocationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        //getLastLocation();
+        NotificationHandler.notify(this, android.R.drawable.ic_popup_sync,
+                getString(R.string.app_name), "Location synchronization ...");
+        getLastLocation();
 
         return START_STICKY;
     }
@@ -144,13 +131,17 @@ public class LocationService extends Service {
                         public void onComplete(@NonNull Task<Location> task) {
                             if (task.isSuccessful() && task.getResult() != null) {
                                 mLocation = task.getResult();
+                                sendBroadcast(mLocation);
                             } else {
+                                Toast.makeText(LocationService.this, "Localisation unavailable",
+                                        Toast.LENGTH_SHORT).show();
                                 Log.d("getLastLocation", "Failed to get location.");
                             }
+                            NotificationHandler.cancelNotification(LocationService.this);
                         }
                     });
-        } catch (SecurityException unlikely) {
-            Log.e("getLastLocation", "Lost location permission." + unlikely);
+        } catch (SecurityException e) {
+            Log.d("getLastLocation", "Lost location permission." + e);
         }
     }
 
