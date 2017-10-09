@@ -114,8 +114,6 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 Bundle b = intent.getExtras();
                 Location location = (Location) b.get(LocationService.EXTRA_LOCATION);
-                Log.d("Lat = ", String.valueOf(location.getLatitude()));
-                Log.d("Lon = ", String.valueOf(location.getLongitude()));
 
                 new HttpRequest(MainActivity.this, location).execute(CURRENT_WEATHER_LOCATION_URL);
             }
