@@ -13,12 +13,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.hivian.myweather.R;
 import com.example.hivian.myweather.views.activities.MainActivity;
+import com.google.android.gms.vision.text.Line;
+import com.thbs.skycons.library.CloudFogView;
+import com.thbs.skycons.library.CloudHvRainView;
+import com.thbs.skycons.library.CloudRainView;
+import com.thbs.skycons.library.CloudSnowView;
+import com.thbs.skycons.library.CloudSunView;
+import com.thbs.skycons.library.CloudThunderView;
+import com.thbs.skycons.library.CloudView;
+import com.thbs.skycons.library.MoonView;
+import com.thbs.skycons.library.SunView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,21 +40,21 @@ import java.util.Locale;
 
 
 public class CurrentWeatherFragment extends Fragment {
-    private Typeface weatherFont;
     private TextView cityField;
     private TextView updatedField;
-    private TextView detailsField;
     private TextView descriptionField;
+    private TextView windField;
     private TextView humidityField;
     private TextView pressureField;
     private TextView currentTemperatureField;
-    private TextView weatherIcon;
 
     private JSONObject details;
     private JSONObject main;
+    private JSONObject wind;
     private DateFormat df;
     private String updatedOn;
     private String temperature;
+    private LinearLayout weatherIconLayout;
     private SharedPreferences preferences;
     private static final String PREFS = "PREFS";
     private static final String PREFS_JSON = "PREFS_JSON";
@@ -58,12 +69,11 @@ public class CurrentWeatherFragment extends Fragment {
         cityField = rootView.findViewById(R.id.city_field);
         updatedField = rootView.findViewById(R.id.updated_field);
         descriptionField = rootView.findViewById(R.id.description_field);
+        windField = rootView.findViewById(R.id.wind_field);
         humidityField = rootView.findViewById(R.id. humidity_field);
         pressureField = rootView.findViewById(R.id.pressure_field);
         currentTemperatureField = rootView.findViewById(R.id.current_temperature_field);
-        weatherIcon = rootView.findViewById(R.id.weather_icon);
-
-        weatherIcon.setTypeface(weatherFont);
+        weatherIconLayout = rootView.findViewById(R.id.weather_icon);
 
         loadPreferences();
 
@@ -73,7 +83,7 @@ public class CurrentWeatherFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        weatherFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/weather_icons.ttf");
+        //weatherFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/weather_icons.ttf");
         preferences = getActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
@@ -81,6 +91,7 @@ public class CurrentWeatherFragment extends Fragment {
         try {
             details = json.getJSONArray("weather").getJSONObject(0);
             main = json.getJSONObject("main");
+            wind = json.getJSONObject("wind");
             df = DateFormat.getDateTimeInstance();
             updatedOn = df.format(new Date(json.getLong("dt") * 1000));
             temperature = String.format("%.2f", main.getDouble("temp")) + " ℃";
@@ -90,8 +101,9 @@ public class CurrentWeatherFragment extends Fragment {
                     json.getJSONObject("sys").getString("country"));
             updatedField.setText("Last update: " + updatedOn);
             descriptionField.setText(details.getString("description").toUpperCase(Locale.getDefault()));
-            humidityField.setText("Humidity: " + main.getString("humidity") + "%");
-            pressureField.setText("Pressure: " + main.getString("pressure") + " hPa");
+            windField.setText(wind.getString("speed") + " km/h");
+            humidityField.setText(main.getString("humidity") + " %");
+            pressureField.setText(main.getString("pressure") + " hPa");
             currentTemperatureField.setText(temperature);
             currentTemperatureField.setTextColor(getTemperatureColor(
                     main.getDouble("temp")));
@@ -99,39 +111,65 @@ public class CurrentWeatherFragment extends Fragment {
                     json.getJSONObject("sys").getLong("sunrise") * 1000,
                     json.getJSONObject("sys").getLong("sunset") * 1000);
 
-        } catch(Exception e){
+        } catch (Exception e){
             Log.d("updateCurrentWeather", "JSON field(s) missing");
         }
     }
 
 
     private void setWeatherIcon(int actualId, long sunrise, long sunset){
+        weatherIconLayout = getActivity().findViewById(R.id.weather_icon);
+
         int id = actualId / 100;
-        String icon = "";
-        if (actualId == 800){
+        if (actualId == 800) {
             long currentTime = new Date().getTime();
-            if(currentTime >= sunrise && currentTime < sunset) {
-                icon = getActivity().getString(R.string.weather_sunny);
+            if (currentTime >= sunrise && currentTime < sunset) {
+                SunView sunView = new SunView(
+                        getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                weatherIconLayout.addView(sunView);
             } else {
-                icon = getActivity().getString(R.string.weather_clear_night);
+                MoonView moonView = new MoonView(
+                        getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                weatherIconLayout.addView(moonView);
             }
+        } else if (actualId == 801) {
+            CloudSunView cloudSunView = new CloudSunView(
+                    getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+            weatherIconLayout.addView(cloudSunView);
         } else {
             switch(id) {
-                case 2 : icon = getActivity().getString(R.string.weather_thunder);
+                case 2 :
+                    CloudThunderView cloudThunderView = new CloudThunderView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudThunderView);
                     break;
-                case 3 : icon = getActivity().getString(R.string.weather_drizzle);
+                case 3 :
+                    CloudRainView cloudRainView = new CloudRainView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudRainView);
                     break;
-                case 7 : icon = getActivity().getString(R.string.weather_foggy);
+                case 7 :
+                    CloudFogView cloudFogView = new CloudFogView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudFogView);
                     break;
-                case 8 : icon = getActivity().getString(R.string.weather_cloudy);
+                case 8 :
+                    CloudView cloudView = new CloudView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudView);
                     break;
-                case 6 : icon = getActivity().getString(R.string.weather_snowy);
+                case 6 :
+                    CloudSnowView cloudSnowView = new CloudSnowView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudSnowView);
                     break;
-                case 5 : icon = getActivity().getString(R.string.weather_rainy);
+                case 5 :
+                    CloudHvRainView cloudHvRainView = new CloudHvRainView(
+                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
+                    weatherIconLayout.addView(cloudHvRainView);
                     break;
             }
         }
-        weatherIcon.setText(icon);
     }
 
     public void loadPreferences() {
