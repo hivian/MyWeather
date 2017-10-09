@@ -1,15 +1,9 @@
 package com.example.hivian.myweather.http;
 
-import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
-import android.media.AudioRouting;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.hivian.myweather.utilities.NotificationHandler;
@@ -64,7 +58,6 @@ public class HttpRequest extends AsyncTask<String, String, String> {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
-            // expecting HTTP 200
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 errorMessage = "Server returned HTTP " + connection.getResponseCode()
                         + " " + connection.getResponseMessage();
@@ -82,7 +75,6 @@ public class HttpRequest extends AsyncTask<String, String, String> {
             data = builder.toString();
 
         } catch (Exception e) {
-            Log.d("Error", e.getMessage());
             errorMessage = "Url connection: no data found";
         } finally {
             if (bufferedReader != null) {

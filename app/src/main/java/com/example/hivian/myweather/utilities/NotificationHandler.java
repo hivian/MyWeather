@@ -1,11 +1,8 @@
 package com.example.hivian.myweather.utilities;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
-
-import com.example.hivian.myweather.R;
 
 /**
  * Created by hivian on 10/7/17.
