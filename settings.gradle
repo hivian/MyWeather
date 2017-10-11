@@ -1,1 +1,1 @@
-include ':app', ':SkyconsLibrary', ':SkyconDemo'
+include ':app', ':SkyconsLibrary'
