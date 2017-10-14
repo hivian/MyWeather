@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.example.hivian.myweather.R;
 import com.thbs.skycons.library.CloudFogView;
 import com.thbs.skycons.library.CloudHvRainView;
+import com.thbs.skycons.library.CloudMoonView;
 import com.thbs.skycons.library.CloudRainView;
 import com.thbs.skycons.library.CloudSnowView;
 import com.thbs.skycons.library.CloudSunView;
@@ -111,56 +112,54 @@ public class CurrentWeatherFragment extends Fragment {
 
     private void setWeatherIcon(int actualId, long sunrise, long sunset){
         weatherIconLayout = getActivity().findViewById(R.id.weather_icon);
-
+        int strokeColor = Color.parseColor("#FFFFFF");
+        int backgroundColor = Color.parseColor("#00000000");
+        boolean isStatic = false;
+        boolean isAnimated = true;
         int id = actualId / 100;
+        long currentTime = new Date().getTime();
+        View view = null;
+
         if (actualId == 800) {
-            long currentTime = new Date().getTime();
             if (currentTime >= sunrise && currentTime < sunset) {
-                SunView sunView = new SunView(
-                        getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                weatherIconLayout.addView(sunView);
+                view = new SunView(
+                        getActivity(), isStatic, isAnimated, strokeColor, backgroundColor);
             } else {
-                MoonView moonView = new MoonView(
-                        getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                weatherIconLayout.addView(moonView);
+                view = new MoonView(
+                        getActivity(), isStatic, isAnimated, strokeColor, backgroundColor);
             }
-        } else if (actualId == 801) {
-            CloudSunView cloudSunView = new CloudSunView(
-                    getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-            weatherIconLayout.addView(cloudSunView);
+        } else if (actualId == 801 || actualId == 802) {
+            if (currentTime >= sunrise && currentTime < sunset) {
+                view = new CloudSunView(
+                        getActivity(), isStatic, isAnimated, strokeColor, backgroundColor);
+            } else {
+                view = new CloudMoonView(
+                        getActivity(), isStatic, isAnimated, strokeColor, backgroundColor);
+            }
         } else {
             switch(id) {
-                case 2 :
-                    CloudThunderView cloudThunderView = new CloudThunderView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudThunderView);
-                    break;
-                case 3 :
-                    CloudRainView cloudRainView = new CloudRainView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudRainView);
-                    break;
-                case 7 :
-                    CloudFogView cloudFogView = new CloudFogView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudFogView);
-                    break;
-                case 8 :
-                    CloudView cloudView = new CloudView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudView);
-                    break;
-                case 6 :
-                    CloudSnowView cloudSnowView = new CloudSnowView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudSnowView);
-                    break;
-                case 5 :
-                    CloudHvRainView cloudHvRainView = new CloudHvRainView(
-                            getActivity(), false, true, Color.parseColor("#FFFFFF"), Color.parseColor("#00000000"));
-                    weatherIconLayout.addView(cloudHvRainView);
-                    break;
+                case 2:
+                    view = new CloudThunderView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
+                case 3:
+                    view = new CloudRainView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
+                case 7:
+                    view = new CloudFogView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
+                case 8:
+                    view = new CloudView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
+                case 6:
+                    view = new CloudSnowView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
+                case 5:
+                    view = new CloudHvRainView(
+                            getActivity(), isStatic, isAnimated, strokeColor, backgroundColor); break;
             }
+        }
+        if (view != null) {
+            weatherIconLayout.addView(view);
         }
     }
 

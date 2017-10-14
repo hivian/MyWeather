@@ -9,14 +9,14 @@ import android.widget.Toast;
 import com.example.hivian.myweather.utilities.NotificationHandler;
 import com.example.hivian.myweather.views.activities.MainActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Created by hivian on 10/2/17.

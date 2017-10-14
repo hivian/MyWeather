@@ -9,17 +9,17 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.os.Bundle;
 
 import com.example.hivian.myweather.R;
-import com.example.hivian.myweather.services.LocationService;
 import com.example.hivian.myweather.http.HttpRequest;
+import com.example.hivian.myweather.services.LocationService;
 import com.example.hivian.myweather.views.fragments.CurrentWeatherFragment;
 
 import org.json.JSONObject;
